@@ -18,8 +18,7 @@ export default function Home() {
         </div>
 
         <p className="max-w-sm text-sm text-[var(--muted)]">
-          Next.js (App Router) + Tone.js の環境構築済みです。ブラウザで「Play
-          sample chord」を押すと FM7 が鳴ります。
+          各ボタンを押すとそのコードが鳴ります。
         </p>
       </main>
     </div>
