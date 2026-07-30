@@ -74,6 +74,8 @@ export function preloadPiano() {
 export async function playChord(notes: string[], duration = "2n") {
   await Tone.start();
   const piano = await getPiano();
+  // Stop any ringing notes so the next chord can start immediately.
+  piano.releaseAll();
   const now = Tone.now();
   piano.triggerAttackRelease(notes, duration, now);
 }

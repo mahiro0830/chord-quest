@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { playChord, preloadPiano } from "@/lib/audio/chordPlayer";
 
 const CHORDS = [
@@ -15,6 +15,7 @@ export function ChordPreview() {
   const [isReady, setIsReady] = useState(false);
   const [playingName, setPlayingName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const clearPlayingTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,12 +33,19 @@ export function ChordPreview() {
 
     return () => {
       cancelled = true;
+      if (clearPlayingTimerRef.current !== null) {
+        window.clearTimeout(clearPlayingTimerRef.current);
+      }
     };
   }, []);
 
   async function handlePlay(name: string, notes: readonly string[]) {
     setError(null);
     setPlayingName(name);
+
+    if (clearPlayingTimerRef.current !== null) {
+      window.clearTimeout(clearPlayingTimerRef.current);
+    }
 
     try {
       await playChord([...notes]);
@@ -46,7 +54,10 @@ export function ChordPreview() {
         err instanceof Error ? err.message : "Failed to play chord";
       setError(message);
     } finally {
-      window.setTimeout(() => setPlayingName(null), 1200);
+      clearPlayingTimerRef.current = window.setTimeout(() => {
+        setPlayingName(null);
+        clearPlayingTimerRef.current = null;
+      }, 1200);
     }
   }
 
@@ -64,7 +75,7 @@ export function ChordPreview() {
               key={chord.name}
               type="button"
               onClick={() => handlePlay(chord.name, chord.notes)}
-              disabled={!isReady || playingName !== null}
+              disabled={!isReady}
               className="min-w-20 cursor-pointer rounded-lg bg-[var(--accent)] px-5 py-3 text-base font-medium text-[var(--accent-foreground)] transition enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPlaying ? "…" : chord.name}
