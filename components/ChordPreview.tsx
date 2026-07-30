@@ -65,7 +65,7 @@ export function ChordPreview() {
               type="button"
               onClick={() => handlePlay(chord.name, chord.notes)}
               disabled={!isReady || playingName !== null}
-              className="min-w-20 rounded-lg bg-[var(--accent)] px-5 py-3 text-base font-medium text-[var(--accent-foreground)] transition enabled:hover:opacity-90 disabled:opacity-60"
+              className="min-w-20 cursor-pointer rounded-lg bg-[var(--accent)] px-5 py-3 text-base font-medium text-[var(--accent-foreground)] transition enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPlaying ? "…" : chord.name}
             </button>
