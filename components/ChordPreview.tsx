@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { playChord } from "@/lib/audio/chordPlayer";
+import { useEffect, useState } from "react";
+import { playChord, preloadPiano } from "@/lib/audio/chordPlayer";
 
 const CHORDS = [
   { name: "FM7", notes: ["F4", "A4", "C5", "E5"] },
@@ -12,8 +12,28 @@ const CHORDS = [
 ] as const;
 
 export function ChordPreview() {
+  const [isReady, setIsReady] = useState(false);
   const [playingName, setPlayingName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    preloadPiano()
+      .then(() => {
+        if (!cancelled) setIsReady(true);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const message =
+          err instanceof Error ? err.message : "Failed to load piano samples";
+        setError(message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handlePlay(name: string, notes: readonly string[]) {
     setError(null);
@@ -33,7 +53,7 @@ export function ChordPreview() {
   return (
     <div className="flex flex-col items-center gap-5">
       <p className="text-sm tracking-wide text-[var(--muted)]">
-        コードを押して音を確認
+        {isReady ? "コードを押して音を確認（ピアノ）" : "ピアノ音源を読み込み中…"}
       </p>
       <div className="flex flex-wrap justify-center gap-3">
         {CHORDS.map((chord) => {
@@ -44,7 +64,7 @@ export function ChordPreview() {
               key={chord.name}
               type="button"
               onClick={() => handlePlay(chord.name, chord.notes)}
-              disabled={playingName !== null}
+              disabled={!isReady || playingName !== null}
               className="min-w-20 rounded-lg bg-[var(--accent)] px-5 py-3 text-base font-medium text-[var(--accent-foreground)] transition enabled:hover:opacity-90 disabled:opacity-60"
             >
               {isPlaying ? "…" : chord.name}
